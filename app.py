@@ -1,34 +1,44 @@
 from flask import Flask, jsonify, render_template, request, jsonify
 from fuzzywuzzy import fuzz
+from filelock import FileLock
 import pandas as pd
 import numpy as np
 
 app = Flask(__name__)
+lock = FileLock("data/referrals.csv.lock")
 
-df = pd.read_csv('data/referrals.csv')
+def mod_df(df): 
+    # Sort the DataFrame by 'SPECIALTY' but keep the original index values
+    df = df.sort_values(by='SPECIALTY').reset_index(drop=True)
 
-# Sort the DataFrame by 'SPECIALTY' but keep the original index values
-df = df.sort_values(by='SPECIALTY').reset_index(drop=True)
+    print(len(df))
+    # Fill NaN values in NAME_OF_ORGANIZATION with 'Unknown Organization'
+    df['NAME_OF_ORGANIZATION'].fillna('Unknown Organization', inplace=True)
 
-print(len(df))
-# Fill NaN values in NAME_OF_ORGANIZATION with 'Unknown Organization'
-df['NAME_OF_ORGANIZATION'].fillna('Unknown Organization', inplace=True)
+    df['NAME'].fillna('', inplace=True)
+    return df
 
-df['NAME'].fillna('', inplace=True)
-# %%
-# df2 = pd.read_csv('../ec_score_file.csv')
-# %%
 
-# Assuming df and df2 are your dataframes loaded earlier in the code
-# df is the one from the Excel and df2 is the one with provider details
+def load_data():
+    return pd.read_csv('data/referrals.csv')
+
+
+
+
 
 @app.route('/')
 def home():
+    df = load_data()
+    df = mod_df(df)
     specialties = df['SPECIALTY'].unique().tolist()
     return render_template('dashboard.html', specialties=specialties)
 
 @app.route('/search')
 def search():
+    df = load_data()
+    df = mod_df(df)
+    
+    
     term = request.args.get('q', '')
     
     results = df[df.apply(lambda row: fuzz.token_set_ratio(row['NAME_OF_ORGANIZATION'], term) > 70 or
@@ -48,6 +58,8 @@ def search():
 
 @app.route('/filter')
 def filter_by_specialty():
+    df = load_data()
+    df = mod_df(df)
     specialty = request.args.get('q', '')
     results = df[df['SPECIALTY'] == specialty]
     print(f"Filter by specialty: {specialty}, results count: {len(results)}") 
@@ -57,6 +69,8 @@ def filter_by_specialty():
 
 @app.route('/details')
 def details():
+    df = load_data()
+    df = mod_df(df)
     index = int(request.args.get('index', -1))  # Get the index from the request
     print(f"Index: {index}")
     print(type(index))
@@ -81,44 +95,47 @@ def details():
 
 @app.route('/update', methods=['POST'])
 def update():
-    global df  # Ensuring we're using the global df variable
+    df = load_data()
+    df = mod_df(df)
     try:
-        # Extract index from POST request
-        index = int(request.form.get('index', -1))
+        with lock:
+            # Extract index from POST request
+            index = int(request.form.get('index', -1))
 
-        # Debug Log
-        print(f"Received Data for index {index}:")
+            # Debug Log
+            print(f"Received Data for index {index}:")
 
-        if index != -1 and index in df.index:
-            # Update existing record
-            for key in request.form:
-                if key != "index":
-                    df.loc[index, key] = request.form.get(key)
-                    print(f"{key}={request.form.get(key)}")
+            if index != -1 and index in df.index:
+                # Update existing record
+                for key in request.form:
+                    if key != "index":
+                        df.loc[index, key] = request.form.get(key)
+                        print(f"{key}={request.form.get(key)}")
 
-            print(f"Updated DataFrame: \n{df}")
-            
-            message = "Record updated successfully in memory!"
+                print(f"Updated DataFrame: \n{df}")
+                
+                message = "Record updated successfully in memory!"
 
-        else:
-            # Add new record
-            new_record = {}
-            for key in request.form:
-                if key != "index":
-                    new_record[key] = request.form.get(key)
-            df = df.append(new_record, ignore_index=True)
-            print(f"Added new record. DataFrame: \n{df}")
+            else:
+                # Add new record
+                new_record = {}
+                for key in request.form:
+                    if key != "index":
+                        new_record[key] = request.form.get(key)
+                df = df.append(new_record, ignore_index=True)
+                print(f"Added new record. DataFrame: \n{df}")
 
-            message = "Record added successfully in memory!"
+                message = "Record added successfully in memory!"
 
-        # Save the dataframe to CSV
-        df.to_csv('data/referrals.csv', index=False)
+            # Save the dataframe to CSV
+            df.to_csv('data/referrals.csv', index=False)
 
-        return jsonify({"status": "success", "message": message})
+        
 
     except Exception as e:
         print(f"Unexpected error occurred: {str(e)}")
         return jsonify({"status": "error", "message": str(e)})
+    return jsonify({"status": "success", "message": message})
 
 
 

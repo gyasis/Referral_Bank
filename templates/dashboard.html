@@ -43,6 +43,96 @@
     <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search"
       id="search">
   </header>
+<!-- Initial Info Modal -->
+<div class="modal fade" id="initialInfoModal" tabindex="-1" aria-labelledby="initialInfoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="initialInfoModalLabel">Welcome to Our App</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- You can add detailed information about the app here. For now, I'm just adding a placeholder. -->
+        <div class="referral-bank-modal">
+
+    <h2>Referral Bank Overview</h2>
+    <hr>
+
+    <h3>Referral Bank</h3>
+    <p>A holistic web application crafted for seamless management and retrieval of referral information.</p>
+    <hr>
+
+    <h4>🔍 Search Bar</h4>
+    <ul>
+        <li>Utilize a sophisticated search bar for instant data access.</li>
+        <li>Input keywords or phrases for fuzzy searches, pinpointing specific referral notes and details.</li>
+    </ul>
+    <hr>
+
+    <h4>📌 Specialty Sidebar</h4>
+    <ul>
+        <li>Neatly organized categories for various specialties.</li>
+        <li>Navigate specialties like acupuncture, cardiology, endocrine, and more.</li>
+        <li>View related organizations and service providers with ease.</li>
+    </ul>
+    <hr>
+
+    <h4>🛠 Edit & Add Features</h4>
+    <ul>
+        <li>Stay current by editing pre-existing referral records.</li>
+        <li>Introduce new referrals, ensuring a continuously updated database.</li>
+    </ul>
+    <hr>
+
+    <h4>📑 Detailed Referral Information</h4>
+    <ul>
+        <li>A rich repository of referral details:</li>
+        <li>Organization name</li>
+        <li>Service providers</li>
+        <li>Contact info (phone, fax, email, website)</li>
+        <li>Location and more.</li>
+    </ul>
+    <hr>
+
+    <h4>🗺 Potential Mapping Feature</h4>
+    <ul>
+        <li>Future updates might bring mapping integration.</li>
+        <li>Visualize service providers' locations and estimate distances.</li>
+    </ul>
+    <hr>
+
+    <h4>👁️ User-Centric Design</h4>
+    <ul>
+        <li>An intuitive interface promoting user satisfaction.</li>
+        <li>Swiftly locate required data without any hassle.</li>
+    </ul>
+    <hr>
+
+    <h4>💡 Temporary Solution</h4>
+    <ul>
+        <li>A practical interim tool until a fitting paid vendor is onboarded.</li>
+        <li>Enjoy top-tier referral management without immediate financial constraints.</li>
+    </ul>
+    <hr>
+
+    <h4>📢 Feedback & Support</h4>
+    <ul>
+        <li>Your voice matters! Share feedback and report glitches.</li>
+        <li>A commitment to incessant enhancement and swift issue resolution.</li>
+    </ul>
+    <hr>
+
+    <p><em>Experience the evolution of referral management with Referral Bank.</em></p>
+
+</div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <div id="main_info" class="container-fluid">
     <div class="row">
@@ -289,6 +379,8 @@
             console.error("Error: ", textStatus, ", ", errorThrown);
           });
       });
+
+      $('#initialInfoModal').modal('show');
 
       // When the edit icon on the card is clicked
       $('#card_display').on('click', '#record_edit', function () {
