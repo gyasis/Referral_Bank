@@ -1,0 +1,2 @@
+$('#edit_form').on('submit', function (e) { e.preventDefault(); var formData = $(this).serialize(); if (currentlyEditingIndex !== null) { formData += "&index=" + currentlyEditingIndex; // Only add index if editing } $.post("/update", formData).done(function
+(data) { // Handle successful response }) .fail(function (jqXHR, textStatus, errorThrown) { console.error("Error during save: ", textStatus, ", ", errorThrown); }); });

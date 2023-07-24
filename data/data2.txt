@@ -1,0 +1,134 @@
+Psychiatry: 
+
+name:Joseph Akoh and Dr. Hardrict 
+org: Synergen Behavioral Health. 
+phone: 651-433-7207 to schedule. 
+notes:Ask for Etta Rodriguez with questions. 
+
+ 
+
+ 
+
+Psychotherapists: 
+ 
+
+name: Ann Boekhoff 
+notes: (adult, family & couples, 
+Location:St. Paul  
+telephone:651-647-3492) 
+
+ 
+
+name:Eric Boone  
+notes: worked for a long time at the Center for Victims of Torture
+location:Minneapolis (Loring Park) 
+telephone:612-454-9798 
+
+ 
+
+name:Robin King Cooper 
+notes:adults and couples
+location:St. Paul – Cleveland and St. Clair
+telephone:651-690-1810 
+
+ 
+
+name:Kathleen Fargione 
+notes:(adolescents, adults, very good but frequently full) 
+location:Minneapolis
+telephone:952-212-8439 
+
+ 
+
+name:Carolyn Fuchs 
+notes:(does everything
+location: Hudson WI, 
+phone:715-222-2260 
+
+ 
+
+name:Thomas Greenspon 
+notes:(families, couples, children, adults, very experience practitioner) 
+
+telephone:952-929-1499 
+location:(office in the south dale area) 
+
+ 
+
+name:Sharon Grostephan 
+notes: adults 
+telephone: 612-922-9144 
+location:(St. Louis Park) 
+
+ 
+
+name: Georgeann Lewis 
+notes: children & adolescents, adults and couples
+telephone:612-239-2796 
+location:(Minneapolis) 
+
+ 
+
+name: Arthur Lebow 
+notes:adults and couple 
+telephone:651-699-7050 
+
+ 
+
+name: Thrace Soryn 
+telephone: 612-374-219
+location:Minneapolis 
+
+ 
+
+name:Peter Zelles 
+notes:(my go-to person for testing and evaluations in legal type situations, also a good over all therapist) 
+
+telephone:651-698-8745 
+
+ 
+
+name:Thomas (Tod) Wales
+notes:couples, families, children 
+telephone:651-699-1062 
+
+ 
+
+name:Elizabeth Vu 
+notes:(children, adolescents, family) 
+telephone:612-709-4742 
+
+ 
+
+name:Susan Buesing 
+notes":Marriage & Family Therapist, MS, LMFT, LD  Private Practice 
+location:521 Tanglewood Dr Shoreview, MN 55126 
+telephone:(651) 433-6068 
+
+ 
+
+
+name:Chris Heise, LICSW, 
+notes:(formerly with Pipe Trades services in White Bear); Good with trauma; uses EMDR and A.R.T. Takes Medicare.   
+org: Alliance for Healing
+location:4505 White Bear Parkway, Ste. 1500, White Bear Lake, MN 55110
+number:651-493-8150 
+
+
+
+
+
+
+name:Brooke Palmer, 
+web:https://med.umn.edu/bio/brooke-palmer   
+notes:Special interest in GI-related issues.described as kind and practical. Health psychologists at the University of Minnesota
+location:University of Minnesota
+telephone 612-624-1479
+
+name:Janet Thomas 
+web:https://med.umn.edu/bio/janet-thomas    
+notes:Anxiety, smoking cessation, weight.described as kind and practical. Health psychologists at the University of Minnesota
+location:University of Minnesota
+telephone 612-624-1479
+
+

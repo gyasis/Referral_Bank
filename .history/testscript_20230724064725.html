@@ -1,0 +1,52 @@
+<script>
+    $(document).ready(function() {
+        // ... (your existing code)
+
+        // When the edit icon on the card is clicked
+        $('#card_display').on('click', '#record_edit', function() {
+            // ... (your existing code for editing)
+
+            // Change the action and button text for update
+            $("#update_button").text('Update').data('action', 'update');
+        });
+
+        // When the addReferral button is clicked
+        $("#addReferral").click(function() {
+            $("#edit_form").trigger('reset');
+            $("#update_button").text('Add').data('action', 'add');
+            $("#edit_modal").modal('show');
+        });
+
+        // When the edit form is submitted
+        $('#edit_form').on('submit', function(e) {
+            e.preventDefault();
+            var formData = $(this).serialize(); // Get the form data
+
+            var action = $("#update_button").data('action');
+
+            if (action === 'update') {
+                formData += "&index=" + currentlyEditingIndex;
+                var endpoint = "/update"; // Endpoint for updating
+            } else {
+                var endpoint = "/add"; // Endpoint for adding
+            }
+
+            $.post(endpoint, formData)
+                .done(function(data) {
+                    // Refresh the current table's data and update the table and card
+                    var searchTerm = $("#search").val(); // Get the current search term
+                    if (searchTerm.length > 2) {
+                        $.get("/search", {
+                            q: searchTerm
+                        }, function(updatedData) {
+                            createTable(updatedData);
+                        });
+                    }
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error during save: ", textStatus, ", ", errorThrown);
+                });
+        });
+        // ... (rest of your existing code)
+    }); <
+    /script?>

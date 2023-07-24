@@ -1,0 +1,3 @@
+$('#edit_form').on('submit', function (e) { e.preventDefault(); var formData = $(this).serialize(); if (currentlyEditingIndex !== null) { formData += "&index=" + currentlyEditingIndex; } $.post("/update", formData).done(function (data) { var searchTerm
+= $("#search").val(); if (searchTerm.length > 2) { $.get("/search", { q: searchTerm }, function (updatedData) { createTable(updatedData); }); } // Close the modal after 1 second setTimeout(function() { $("#edit_modal").modal('hide'); }, 1000); // Waits
+for 1 second (1000 milliseconds) }).fail(function (jqXHR, textStatus, errorThrown) { console.error("Error during save: ", textStatus, ", ", errorThrown); }); });

@@ -1,0 +1,22 @@
+$(document).ready(function () { var table; var currentlyEditingIndex = null; // Initialized to null function createTable(data) { $("#table_results").html(data); if ($.fn.DataTable.isDataTable('#table_results table')) { $('#table_results table') .DataTable()
+.destroy(); } table = $('#table_results table').DataTable({ searching: false, lengthChange: false, responsive: true, autoWidth: true }); $(window).resize(function () { table .columns .adjust() .draw(); }); } $("#search").on('input', function () { var
+searchTerm = $(this).val(); if (searchTerm.length > 2) { $.get("/search", { q: searchTerm }, function (data) { createTable(data); }) .fail(function (jqXHR, textStatus, errorThrown) { console.error("Error during search: ", textStatus, ", ", errorThrown);
+}); } }); $('#table_results').on('click', 'table tbody tr', function () { var rowIndex = $('th', this).eq(0).text(); currentlyEditingIndex = rowIndex; $('table tbody tr').removeClass('highlight'); $(this).addClass('highlight'); $.get("/details", { index:
+rowIndex }) .done(function (data) { function addRow(label, value) { return `
+<div class="row-container">
+    <div class="label">${label}</div>
+    <div class="value">${value}</div>
+</div>
+`; } function isInvalidValue(value) { return !value || value === 'not available'; } var combinedName = ""; if (!isInvalidValue(data['NAME_OF_ORGANIZATION']) && !isInvalidValue(data['NAME'])) { combinedName = data['NAME_OF_ORGANIZATION'] + ' - ' + data['NAME'];
+} else if (!isInvalidValue(data['NAME_OF_ORGANIZATION'])) { combinedName = data['NAME_OF_ORGANIZATION']; } else if (!isInvalidValue(data['NAME'])) { combinedName = data['NAME']; } else { combinedName = "Information not available"; } $("#card_display .card-title").html(combinedName
++ '<br>'); $("#card_display .card-text").html(''); const fields = { 'NAME': '<b>Recommended Provider</b>', 'LOCATION(S)': '<b>Location</b>', 'PHONE_NUMBER': '<b>Phone Number</b>', 'FAX_NUMBER': '<b>Fax Number</b>', 'WEBSITE': '<b>Website</b>', 'EMAIL':
+'
+<b>Email</b>', 'NOTES': '<b>Notes</b>', 'SPECIALTY': '<b>Specialty</b>' }; for (let key in fields) { if (data[key] && data[key] !== 'nan' && data[key] !== 'not available') { let value = key === 'WEBSITE' ? `<a href="${data[key]}">${data[key]}</a>` : data[key];
+$("#card_display .card-text").append(addRow(fields[key], value)); } } $("#card_display").show(); }) .fail(function (jqXHR, textStatus, errorThrown) { console.error("Error: ", textStatus, ", ", errorThrown); }); }); $('#card_display').on('click', '#record_edit',
+function () { $.get("/details", { index: currentlyEditingIndex }) .done(function (data) { $("#edit_form input[name='NAME_OF_ORGANIZATION']").val(data['NAME_OF_ORGANIZATION']); $("#edit_form input[name='NAME']").val(data['NAME']); $("#edit_form input[name='LOCATION(S)']").val(data['LOCATION(S)']);
+$("#edit_form input[name='PHONE_NUMBER']").val(data['PHONE_NUMBER']); $("#edit_form input[name='FAX_NUMBER']").val(data['FAX_NUMBER']); $("#edit_form input[name='WEBSITE']").val(data['WEBSITE']); $("#edit_form input[name='EMAIL']").val(data['EMAIL']);
+$("#edit_form textarea[name='NOTES']").val(data['NOTES']); $("#edit_form input[name='SPECIALTY']").val(data['SPECIALTY']); $("#edit_modal").modal('show'); }); }); $('#edit_form').on('submit', function (e) { e.preventDefault(); var formData = $(this).serialize();
+if (currentlyEditingIndex !== null) { formData += "&index=" + currentlyEditingIndex; } $.post("/update", formData).done(function (data) { var searchTerm = $("#search").val(); if (searchTerm.length > 2) { $.get("/search", { q: searchTerm }, function (updatedData)
+{ createTable(updatedData); }); } }) .fail(function (jqXHR, textStatus, errorThrown) { console.error("Error during save: ", textStatus, ", ", errorThrown); }); }); $("#specialties .nav-link").on('click', function () { $("#card_display").hide(); var specialty
+= $(this).text(); $.get("/filter", { q: specialty }, function (data) { createTable(data); }); }); $("#addReferral").click(function () { $("#edit_form").trigger('reset'); $("#update_button").text('Add'); currentlyEditingIndex = null; // Reset the index
+for add $("#edit_modal").modal('show'); }); });
