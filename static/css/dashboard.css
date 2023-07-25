@@ -162,3 +162,12 @@ main {
 .hidden-id {
     display: none;
 }
+
+
+/* Adjusting the title appearance */
+
+#toast-container .toast-title {
+    font-weight: bold;
+    font-size: 1.5rem;
+    /* making the title a bit larger */
+}
