@@ -1,11 +1,24 @@
+# %%
 from flask import Flask, jsonify, render_template, request, jsonify
 from fuzzywuzzy import fuzz
 from filelock import FileLock
 import pandas as pd
 import numpy as np
+import sqlite3
+from inspect import currentframe
+import sys
+
+# %%
 
 app = Flask(__name__)
-lock = FileLock("data/referrals.csv.lock")
+
+
+# Database setup
+DB_PATH = "data/referrals.db"
+conn = sqlite3.connect(DB_PATH)
+cur = conn.cursor()
+# Assuming the table has already been created and structured correctly
+
 
 def mod_df(df): 
     # Sort the DataFrame by 'SPECIALTY' but keep the original index values
@@ -16,11 +29,16 @@ def mod_df(df):
     df['NAME_OF_ORGANIZATION'].fillna('Unknown Organization', inplace=True)
 
     df['NAME'].fillna('', inplace=True)
+    print(f"modified df: {df.head()}")
     return df
 
 
 def load_data():
-    return pd.read_csv('data/referrals.csv')
+    conn = sqlite3.connect(DB_PATH)
+    df = pd.read_sql_query("SELECT * FROM referrals", conn)
+    conn.close()
+    print(df.head())
+    return df
 
 
 
@@ -51,7 +69,7 @@ def search():
     print(f"Search term: {term}, results count: {len(results)}") 
     
     # Return the desired columns
-    return results[['NAME_OF_ORGANIZATION', 'NAME', 'SPECIALTY']].to_html(index=True)
+    return results[['id','NAME_OF_ORGANIZATION', 'NAME', 'SPECIALTY']].to_html(index=True)
 
 
 
@@ -64,79 +82,112 @@ def filter_by_specialty():
     results = df[df['SPECIALTY'] == specialty]
     print(f"Filter by specialty: {specialty}, results count: {len(results)}") 
     print(results)
-    return results[['NAME_OF_ORGANIZATION','NAME', 'SPECIALTY']].to_html(index=True)
+    return results[['id','NAME_OF_ORGANIZATION','NAME', 'SPECIALTY']].to_html(index=True)
 
 
 @app.route('/details')
 def details():
     df = load_data()
     df = mod_df(df)
-    index = int(request.args.get('index', -1))  # Get the index from the request
-    print(f"Index: {index}")
-    print(type(index))
-    # Check if a valid index is provided
-    if index != -1:
+    row_id = int(request.args.get('index', -1))  # Get the id from the request
+    print(f"Row ID: {row_id}")
+    print(type(row_id))
+    
+    # Check if a valid id is provided
+    if row_id != -1:
         try:
-            result = df.loc[index].to_dict()  # Use the index to retrieve the row
+            # Use the 'id' column to retrieve the row
+            result = df[df['id'] == row_id].iloc[0].to_dict()  
             print(result)
+
             # Convert NaN or NA values to an empty string
             for key in result.keys():
                 if pd.isnull(result[key]):
                     result[key] = ''
-
-           
         except Exception as e:
             print(f"Unexpected error occurred: {str(e)}")
             result = {}
 
         return jsonify({str(k): str(v) for k, v in result.items()})  # Converts all keys and values to string
     else:
-        return jsonify({"error": "Invalid index provided."})
+        return jsonify({"error": "Invalid id provided."})
+
 
 @app.route('/update', methods=['POST'])
 def update():
-    df = load_data()
-    df = mod_df(df)
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
     try:
-        with lock:
-            # Extract index from POST request
-            index = int(request.form.get('index', -1))
-
-            # Debug Log
-            print(f"Received Data for index {index}:")
-
-            if index != -1 and index in df.index:
-                # Update existing record
-                for key in request.form:
-                    if key != "index":
-                        df.loc[index, key] = request.form.get(key)
-                        print(f"{key}={request.form.get(key)}")
-
-                print(f"Updated DataFrame: \n{df}")
-                
-                message = "Record updated successfully in memory!"
-
-            else:
-                # Add new record
-                new_record = {}
-                for key in request.form:
-                    if key != "index":
-                        new_record[key] = request.form.get(key)
-                df = df.append(new_record, ignore_index=True)
-                print(f"Added new record. DataFrame: \n{df}")
-
-                message = "Record added successfully in memory!"
-
-            # Save the dataframe to CSV
-            df.to_csv('data/referrals.csv', index=False)
+        # Extract index from POST request
+        index = request.form.get('index')
+        index = int(index) if index else -1
 
         
+        # Debug Log
+        print(f"Received Data for index {index}:")
+
+        # Check if record exists
+        cur.execute("SELECT * FROM referrals WHERE id=?", (index,))
+        referral = cur.fetchone()
+
+        if referral:
+            # Update fields based on the form data, including empty fields
+            update_values = [(key, request.form.get(key)) for key in request.form if key != "index"]
+            for key, value in update_values:
+                sql = f'UPDATE referrals SET "{key}"=? WHERE id=?'
+
+                print(f"Executing SQL: {sql} with values: ({value}, {index})")
+                cur.execute(sql, (value, index))
+            message = "Record updated successfully!"
+        else:
+            # Exclude 'index' from columns and values since SQLite will auto-generate id
+            columns = ', '.join([key for key in request.form if key != "index"])
+            placeholders = ', '.join(['?'] * len(columns.split(', ')))
+            values = tuple([request.form.get(key) for key in request.form if key != "index"])
+            cur.execute(f"INSERT INTO referrals ({columns}) VALUES ({placeholders})", values)
+            message = "Record added successfully!"
+
+
+        # Commit changes to the database
+        conn.commit()
+        conn.close()
 
     except Exception as e:
-        print(f"Unexpected error occurred: {str(e)}")
+        conn.rollback()
+        conn.close()
+        print(f"Unexpected error occurred at line {sys.exc_info()[-1].tb_lineno}: {str(e)}")
         return jsonify({"status": "error", "message": str(e)})
+
     return jsonify({"status": "success", "message": message})
 
+@app.route('/delete', methods=['POST'])
+def delete():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    try:
+        # Extract index from POST request
+        index = request.form.get('index')
+        index = int(index) if index else -1
+
+        # Check if record exists
+        cur.execute("SELECT * FROM referrals WHERE id=?", (index,))
+        referral = cur.fetchone()
+
+        if referral:
+            # Delete the record
+            cur.execute("DELETE FROM referrals WHERE id=?", (index,))
+            conn.commit()
+            conn.close()
+            return jsonify({"status": "success", "message": "Record deleted successfully!"})
+        else:
+            conn.close()
+            return jsonify({"status": "error", "message": "Record not found!"})
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        print(f"Unexpected error occurred at line {sys.exc_info()[-1].tb_lineno}: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)})
 
 
 
