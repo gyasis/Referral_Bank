@@ -16,15 +16,20 @@
     href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
 
   <!-- Responsive DataTables JS -->
-  <s<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js">
+  <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js">
     </script>
 
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
 
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+
+
 
     <!-- Include jQuery Library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 
     <!-- Include DataTables Library -->
     <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -318,7 +323,11 @@
     integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous">
   </script>
 
+
   <script>
+ 
+
+
     $(document).ready(function () {
         // Check if the modal has been shown before
 if (!localStorage.getItem('modalShown')) {
@@ -564,7 +573,31 @@ $('#card_display').on('click', '.fa-trash', function () {
       });
     });
   </script>
+<script>
+   toastr.options = {
+    "closeButton": true,
+"debug": false,
+"newestOnTop": false,
+"progressBar": true,
+"positionClass": "toast-bottom-right",
+"preventDuplicates": false,
+"showDuration": "300",
+"hideDuration": "1000",
+"timeOut": "10000", // The notification will close after 10 seconds
+"extendedTimeOut": "1000",
+"showEasing": "swing",
+"hideEasing": "linear",
+"showMethod": "fadeIn",
+"hideMethod": "fadeOut"
+};
 
+// Play a notification sound
+    var audio = new Audio('https://example.com/notification_sound.mp3');
+    audio.play();
+    
+    toastr.success('Version 0.2 Released!! <br>New features: <br> SQL database <br> Add, Edit, Delete Records<br><strong>Coming Soon:</strong> Users,Permissions!', 'Update Notification');
+
+</script>
 
 </body>
 
