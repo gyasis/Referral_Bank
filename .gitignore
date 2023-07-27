@@ -2,4 +2,4 @@ convert_db.py
 dashnote.html
 data/referrals.sqlite
 scratch.py
-referrals.db
+data/referrals.db
