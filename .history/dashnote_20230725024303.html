@@ -1,0 +1,2 @@
+$('#table_results').on('click', 'table tbody tr', function () { var rowId = $(this).find('.hidden-id').text(); console.log("Clicked Row ID:", rowId); currentlyEditingIndex = rowId; $('table tbody tr').removeClass('highlight'); $(this).addClass('highlight');
+$.get("/details", { index: rowId // Send the database id to the backend }) // ... rest of your code ... });

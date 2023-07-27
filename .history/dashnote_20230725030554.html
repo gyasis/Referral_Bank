@@ -1,0 +1,3 @@
+$(document).ready(function () { // This is the function definition for printing the table function printTableToConsole() { var tableData = []; $('#table_results table tbody tr').each(function(rowIndex, tr) { var row = []; $(this).find('td').each(function(colIndex,
+td) { row.push($(td).text().trim()); }); tableData.push(row); }); // Printing headers (assuming they exist in the table) var headers = []; $('#table_results table thead tr th').each(function(index, th) { headers.push($(th).text().trim()); }); console.table(headers);
+console.table(tableData); } // ... the rest of your existing code ... });
