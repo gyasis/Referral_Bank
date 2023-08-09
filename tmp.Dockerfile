@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Install git and necessary build tools
-RUN apt-get update && apt-get install -y git build-essential gcc libpq-dev python3-dev
+RUN apt-get update && apt-get install -y git build-essential apt-utils gcc libpq-dev python3-dev
 
 # Clone the repository
 ARG GIT_REPO
