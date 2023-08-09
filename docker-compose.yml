@@ -9,7 +9,7 @@ services:
       args:
         - GIT_REPO=https://github.com/gyasis/Referral_Bank.git
     ports:
-      - "5005:5005"
+      - "80:5005"
     volumes:
       - data:/app/data
     environment:
