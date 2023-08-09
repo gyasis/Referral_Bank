@@ -41,3 +41,4 @@ jobs:
     - name: Deploy to Lightsail
       run: |
         ssh -i deploy_key.pem -o StrictHostKeyChecking=no ubuntu@3.18.85.144 "docker-compose pull && docker-compose build --no-cache && docker-compose up -d"
+        
