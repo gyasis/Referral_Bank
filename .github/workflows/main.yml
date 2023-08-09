@@ -26,13 +26,18 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-
     # Pushing the Docker images
     - name: Push Docker images
       run: |
         docker-compose push
 
-    # (Optional) If you want to also deploy the stack after pushing, you can use:
-    # - name: Deploy with Docker Compose
-    #   run: |
-    #     docker-compose up -d
+    # Setup SSH key for Lightsail deployment
+    - name: Setup SSH key
+      run: |
+        echo "${{ secrets.DEPLOY_SSH_KEY }}" | base64 -d > deploy_key.pem
+        chmod 600 deploy_key.pem
+
+    # Deploy to AWS Lightsail
+    - name: Deploy to Lightsail
+      run: |
+        ssh -i deploy_key.pem ubuntu@3.18.85.144 "docker-compose pull && docker-compose up -d"
