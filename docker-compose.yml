@@ -2,7 +2,7 @@ version: "3"
 
 services:
   web:
-    image: your_username/flask_app:latest
+    image: gyasis/referral_bank_01:latest
     build:
       context: .
       dockerfile: Dockerfile
