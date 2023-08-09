@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  web:
+    image: your_username/flask_app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - GIT_REPO=https://github.com/gyasis/Referral_Bank.git
+    ports:
+      - "5005:5005"
+    volumes:
+      - data:/app/data
+    environment:
+      FLASK_APP: app.py
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_RUN_PORT: 5005
+    command: ["flask", "run"]
+
+volumes:
+  data:
