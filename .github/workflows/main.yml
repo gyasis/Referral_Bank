@@ -40,4 +40,4 @@ jobs:
     # Deploy to AWS Lightsail
     - name: Deploy to Lightsail
       run: |
-        ssh -i deploy_key.pem -o ubuntu@3.18.85.144 "docker-compose pull && docker-compose up -d"
+        ssh -i deploy_key.pem ubuntu@3.18.85.144 "docker-compose pull && docker-compose up -d"
