@@ -171,3 +171,54 @@ main {
     font-size: 1.5rem;
     /* making the title a bit larger */
 }
+
+.comments-section {
+    border-top: 1px solid #ccc;
+    padding-top: 20px;
+}
+
+.comment {
+    border: 1px solid #e1e1e1;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-user {
+    font-weight: bold;
+}
+
+.comment-timestamp {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.comment-actions a {
+    margin-left: 10px;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.comment-actions a:hover {
+    text-decoration: underline;
+}
+
+.add-comment textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e1e1e1;
+    border-radius: 5px;
+    resize: none;
+}
+
+.icon-container {
+    padding-right: 5px;
+}

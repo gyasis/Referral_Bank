@@ -176,62 +176,111 @@
             </div>
             <div class="modal-body">
               <form id="edit_form">
+
+
                 <!-- Name of Organization field -->
                 <div class="mb-3">
                   <label for="NAME_OF_ORGANIZATION" class="form-label">Name of Organization</label>
-                  <input type="text" class="form-control" id="NAME_OF_ORGANIZATION" name="NAME_OF_ORGANIZATION">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="NAME_OF_ORGANIZATION" name="NAME_OF_ORGANIZATION">
+                    <span class="input-group-text" id="search-icon-NAME_OF_ORGANIZATION"><i
+                        class="fa fa-plus"></i></span>
+                  </div>
                 </div>
 
                 <!-- Name field -->
                 <div class="mb-3">
                   <label for="NAME" class="form-label">Name</label>
-                  <input type="text" class="form-control" id="NAME" name="NAME">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="NAME" name="NAME">
+                    <span class="input-group-text" id="search-icon-NAME"><i class="fa fa-plus"></i></span>
+                  </div>
                 </div>
 
                 <!-- Location(s) field -->
                 <div class="mb-3">
                   <label for="LOCATION" class="form-label">Location</label>
-                  <input type="text" class="form-control" id="LOCATION" name="LOCATION">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="LOCATION" name="LOCATION">
+                    <span class="input-group-text" id="search-icon-LOCATION"><i class="fa fa-plus"></i></span>
+                  </div>
                 </div>
 
                 <!-- Phone Number field -->
                 <div class="mb-3">
                   <label for="PHONE_NUMBER" class="form-label">Phone Number</label>
-                  <input type="text" class="form-control" id="PHONE_NUMBER" name="PHONE_NUMBER">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="PHONE_NUMBER" name="PHONE_NUMBER">
+                    <span class="input-group-text" id="search-icon-PHONE_NUMBER"><i class="fa fa-plus"></i></span>
+                  </div>
                 </div>
 
                 <!-- Fax Number field -->
                 <div class="mb-3">
                   <label for="FAX_NUMBER" class="form-label">Fax Number</label>
-                  <input type="text" class="form-control" id="FAX_NUMBER" name="FAX_NUMBER">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="FAX_NUMBER" name="FAX_NUMBER">
+                    <span class="input-group-text" id="search-icon-FAX_NUMBER"><i class="fa fa-plus"></i></span>
+                  </div>
                 </div>
 
                 <!-- Website field -->
                 <div class="mb-3">
                   <label for="WEBSITE" class="form-label">Website</label>
-                  <input type="text" class="form-control" id="WEBSITE" name="WEBSITE">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="WEBSITE" name="WEBSITE">
+                    <span class="input-group-text" id="search-icon-WEBSITE"><i class="fa fa-plus"></i></span>
+                  </div>
                 </div>
 
                 <!-- Email field -->
                 <div class="mb-3">
                   <label for="EMAIL" class="form-label">Email</label>
-                  <input type="text" class="form-control" id="EMAIL" name="EMAIL">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="EMAIL" name="EMAIL">
+                    <span class="input-group-text" id="search-icon-EMAIL"><i class="fa fa-plus"></i></span>
+                  </div>
                 </div>
 
                 <!-- Notes field -->
                 <div class="mb-3">
                   <label for="NOTES" class="form-label">Notes</label>
-                  <textarea class="form-control" id="NOTES" name="NOTES"></textarea>
+                  <div class="input-group">
+                    <textarea class="form-control" id="NOTES" name="NOTES"></textarea>
+                    <span class="input-group-text" id="search-icon-NOTES"><i class="fa fa-plus"></i></span>
+                  </div>
                 </div>
 
+                <!-- Specialty field -->
                 <div class="mb-3">
                   <label for="SPECIALTY" class="form-label">Specialty</label>
-                  <input type="text" class="form-control" id="SPECIALTY" name="SPECIALTY">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="SPECIALTY" name="SPECIALTY">
+                    <span class="input-group-text" id="search-icon-SPECIALTY"><i class="fa fa-plus"></i></span>
+                  </div>
+                </div>
+
+                <!-- Search Results Display -->
+                <div id="search-results" style="display:none;">
+                  <h5>Search Results:</h5>
+                  <ul id="results-list">
+                    <!-- Results will be populated here -->
+                  </ul>
+                </div>
+
+                <!-- Output Display -->
+                <div id="output-display" style="display:none; height:200px; overflow-y:scroll;">
+                  <h5>Output:</h5>
+                  <pre id="output-content">
+                          <!-- Output will be populated here -->
+                      </pre>
                 </div>
 
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                   <button type="submit" class="btn btn-primary" id="update_button">Update</button>
+                  <button id="addAllButton" class="btn btn-primary">Add All</button>
+
                 </div>
               </form>
             </div>
@@ -249,11 +298,6 @@
           <!-- Table gets populated here -->
         </div>
 
-        <style>
-          .icon-container {
-            padding-right: 5px;
-          }
-        </style>
 
         <div class="card" id="card_display" style="display: none;">
           <div class="card-body">
@@ -278,6 +322,8 @@
                 </span>
               </div>
             </div>
+
+
           </div>
         </div>
 
@@ -315,7 +361,39 @@
             <h5 class="card-title">Provider Information</h5>
             <p class="card-text">Provider details will be shown here.</p>
           </div>
+
+
         </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section mt-4" style="display: none;">
+          <h5>Comments</h5>
+          <div class="comments-list">
+            <!-- Sample Comment -->
+            <div class="comment">
+              <div class="comment-header">
+                <span class="comment-user">User Name</span>
+                <span class="comment-timestamp">Timestamp</span>
+                <span class="comment-actions">
+                  <a href="#" class="comment-edit">Edit</a>
+                  <a href="#" class="comment-delete">Delete</a>
+                </span>
+              </div>
+              <div class="comment-body">
+                This is a sample comment.
+              </div>
+
+            </div>
+          </div>
+          <div class="add_comment">
+            <textarea placeholder="Add a comment..."></textarea>
+            <div></div>
+            <button class="btn btn-primary mt-2 add_comment button">Post Comment</button>
+          </div>
+        </div>
+
+
+
       </main>
 
     </div>
@@ -327,6 +405,9 @@
 
 
   <script>
+    var currentlyEditingIndex = null;
+
+
     $(document).ready(function () {
       // Check if the modal has been shown before
       if (!localStorage.getItem('modalShown')) {
@@ -340,13 +421,6 @@
 
 
       var table;
-      var currentlyEditingIndex = null; // Initialized to null
-
-
-
-
-
-
 
 
       // This is the function definition for printing the table
@@ -470,6 +544,9 @@
             }
 
             $("#card_display").show();
+
+            // Show the comments section when the provider card is displayed
+            $(".comments-section").show();
           })
           .fail(function (jqXHR, textStatus, errorThrown) {
             console.error("Error: ", textStatus, ", ", errorThrown);
@@ -540,6 +617,9 @@
               // Hiding the card after deletion
               $("#card_display").hide();
 
+              // Hide the comments section when the provider card is hidden
+              $(".comments-section").hide();
+
               // You might also want to refresh any related data displays.
               // For instance, if there's a table displaying these records, you might want to refresh it.
             })
@@ -553,6 +633,7 @@
 
       $("#specialties .nav-link").on('click', function () {
         $("#card_display").hide();
+        $(".comments-section").hide();
         var specialty = $(this).text();
         $.get("/filter", {
           q: specialty
@@ -572,6 +653,307 @@
       });
     });
   </script>
+  <script>
+    $("#search-icon-NAME_OF_ORGANIZATION").click(function () {
+      // Call the smart search function for the NAME_OF_ORGANIZATION field
+      var results = search_and_parse({
+        "NAME_OF_ORGANIZATION": "not available"
+      });
+      // Display the results to the user
+    });
+
+    $("#search-icon-NAME").click(function () {
+      var results = search_and_parse({
+        "NAME": "not available"
+      });
+      // Display the results to the user
+    });
+
+    $("#search-icon-LOCATION").click(function () {
+      var results = search_and_parse({
+        "LOCATION": "not available"
+      });
+      // Display the results to the user
+    });
+
+    $("#search-icon-PHONE_NUMBER").click(function () {
+      var results = search_and_parse({
+        "PHONE_NUMBER": "not available"
+      });
+      // Display the results to the user
+    });
+
+    $("#search-icon-FAX_NUMBER").click(function () {
+      var results = search_and_parse({
+        "FAX_NUMBER": "not available"
+      });
+      // Display the results to the user
+    });
+
+    $("#search-icon-WEBSITE").click(function () {
+      var results = search_and_parse({
+        "WEBSITE": "not available"
+      });
+      // Display the results to the user
+    });
+
+    $("#search-icon-EMAIL").click(function () {
+      var results = search_and_parse({
+        "EMAIL": "not available"
+      });
+      // Display the results to the user
+    });
+
+    $("#search-icon-NOTES").click(function () {
+      var results = search_and_parse({
+        "NOTES": "not available"
+      });
+      // Display the results to the user
+    });
+
+    $("#search-icon-SPECIALTY").click(function () {
+      var results = search_and_parse({
+        "SPECIALTY": "not available"
+      });
+      // Display the results to the user
+    });
+  </script>
+
+  <script>
+    // Function to display search results
+    function displaySearchResults(results) {
+      var resultsList = $("#results-list");
+      resultsList.empty(); // Clear previous results
+
+      results.forEach(function (result, index) {
+        var listItem = $("<li></li>").text(result);
+        var plusIcon = $("<i class='fa fa-plus'></i>").click(function () {
+          // Populate the corresponding field in the form
+          $("#edit_form input[name='" + index + "']").val(result);
+        });
+        listItem.append(plusIcon);
+        resultsList.append(listItem);
+      });
+
+      $("#search-results").show();
+    }
+
+    // Function to display output
+    function displayOutput(output) {
+      $("#output-content").text(output);
+      $("#output-display").show();
+    }
+
+    // Sample usage:
+    // Assuming 'results' is the data you get from the search_and_parse function
+    // displaySearchResults(results);
+
+    // Assuming 'output' is the string you want to display from the print statements
+    // displayOutput(output);
+  </script>
+
+
+
+  <script>
+    // Assuming 'results' is an object containing the details you fetched from the search
+
+    // Event listener for the plus icon next to the NAME_OF_ORGANIZATION result
+    $("#search-icon-NAME_OF_ORGANIZATION").click(function () {
+      $("#NAME_OF_ORGANIZATION").val(results["NAME_OF_ORGANIZATION"]);
+    });
+
+    // Repeat the above for each field in your form:
+    $("#search-icon-NAME").click(function () {
+      $("#NAME").val(results["NAME"]);
+    });
+
+    $("#search-icon-LOCATION").click(function () {
+      $("#LOCATION").val(results["LOCATION"]);
+    });
+
+    $("#search-icon-PHONE_NUMBER").click(function () {
+      $("#PHONE_NUMBER").val(results["PHONE_NUMBER"]);
+    });
+
+    $("#search-icon-FAX_NUMBER").click(function () {
+      $("#FAX_NUMBER").val(results["FAX_NUMBER"]);
+    });
+
+    $("#search-icon-WEBSITE").click(function () {
+      $("#WEBSITE").val(results["WEBSITE"]);
+    });
+
+    $("#search-icon-EMAIL").click(function () {
+      $("#EMAIL").val(results["EMAIL"]);
+    });
+
+    $("#search-icon-NOTES").click(function () {
+      $("#NOTES").val(results["NOTES"]);
+    });
+
+    $("#search-icon-SPECIALTY").click(function () {
+      $("#SPECIALTY").val(results["SPECIALTY"]);
+    });
+
+    // ... and so on for other fields ...
+  </script>
+  <script>
+    $("#addAllButton").click(function () {
+      // Call the smart search function for all fields
+      var results = search_and_parse({
+        "NAME_OF_ORGANIZATION": "not available",
+        "NAME": "not available",
+        // ... add other fields ...
+      });
+
+      // Loop through each input field in the modal
+      $(".modal input").each(function () {
+        var $input = $(this); // Current input field
+        var fieldId = $input.attr('id');
+
+        // If the field is empty and the result exists for this field
+        if ($input.val() === "" && results[fieldId]) {
+          // Create a confirmation dialog
+          $("<div></div>")
+            .html("Suggested value for " + fieldId + ": " + results[fieldId] +
+              ".<br>Do you want to update this field?")
+            .dialog({
+              modal: true,
+              title: "Suggestion for " + fieldId,
+              buttons: {
+                "Accept": function () {
+                  $input.val(results[fieldId]);
+                  $(this).dialog("close");
+                },
+                "Ignore": function () {
+                  $(this).dialog("close");
+                }
+              }
+            });
+        }
+      });
+    });
+  </script>
+
+
+
+  <script>
+    $(document).ready(function () {
+
+      // Function to fetch and display comments for a specific record
+      function loadCommentsForRecord(recordId) {
+        $.get("/comments", {
+          recordId: recordId
+         
+        }, function (comments) {
+          $(".comments-list").empty(); // Clear existing comments
+
+          comments.forEach(function (comment) {
+            console.log("Comments:", comments);
+            console.log(comment);
+            var commentHTML = `
+                        <div class="comment">
+                            <div class="comment-header">
+                                <span class="comment-user">${comment.username}</span>
+                                <span class="comment-timestamp">${comment.timestamp}</span>
+                                <span class="comment-actions">
+                                    <a href="#" class="comment-edit" data-id="${comment.id}">Edit</a>
+                                    <a href="#" class="comment-delete" data-id="${comment.id}">Delete</a>
+                                </span>
+                            </div>
+                            <div class="comment-body">
+                                ${comment.comment}
+                            </div>
+                        </div>
+                    `;
+            $(".comments-list").append(commentHTML);
+          });
+        });
+      }
+
+      // When a record is clicked
+      $('#table_results').on('click', 'table tbody tr', function () {
+        // Load comments for the clicked record
+        loadCommentsForRecord(currentlyEditingIndex);
+      });
+
+      // When posting a new comment
+      $(".add_comment button").click(function () {
+        var commentText = $(".add_comment textarea").val().trim();
+
+        // Check if the commentText is empty
+        if (!commentText) {
+          alert("Please enter a comment before posting.");
+          return; // Exit the function early
+        }
+
+
+        if (commentText) {
+          $.post("/add_comment", {
+            text: commentText,
+            recordId: currentlyEditingIndex // Send the record ID to the server
+          }, function (response) {
+            if (response.status === "success") {
+              var newComment = `
+                            <div class="comment">
+                                <div class="comment-header">
+                                    <span class="comment-user">${response.username}</span>
+                                    <span class="comment-timestamp">${response.timestamp}</span>
+                                    <span class="comment-actions">
+                                        <a href="#" class="comment-edit" data-id="${response.commentId}">Edit</a>
+                                        <a href="#" class="comment-delete" data-id="${response.commentId}">Delete</a>
+                                    </span>
+                                </div>
+                                <div class="comment-body">
+                                    ${response.commentText}
+                                </div>
+                            </div>
+                        `;
+              $(".comments-list").append(newComment);
+              $(".add_comment textarea").val(''); // Clear the textarea
+
+              // After successfully posting a comment, reload the comments for the current record
+              loadCommentsForRecord(currentlyEditingIndex);
+            } else {
+              console.error("Failed to post comment. Response:", response);
+              alert("Failed to post comment.");
+            }
+          }).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error("Error during comment post request:", textStatus, errorThrown);
+            alert("Failed to post comment due to a server error.");
+          });
+        } else {
+          alert("Please enter a comment before posting.");
+        }
+      });
+
+      // Edit and delete comment functionality
+      $(".comments-list").on("click", ".comment-edit", function (e) {
+        e.preventDefault();
+        var commentId = $(this).data("id");
+        var commentText = $(this).closest(".comment").find(".comment-body").text();
+        // Here, you can show a modal or an input field to edit the comment.
+        // After editing, send the updated comment to the back-end.
+      });
+
+      $(".comments-list").on("click", ".comment-delete", function (e) {
+        e.preventDefault();
+        var commentId = $(this).data("id");
+        $.post("/delete_comment", {
+          id: commentId
+        }, function (response) {
+          if (response.success) {
+            // Remove the comment from the list
+            $(`[data-id="${commentId}"]`).closest(".comment").remove();
+          } else {
+            alert("Failed to delete comment.");
+          }
+        });
+      });
+    });
+  </script>
+
+
   <script>
     toastr.options = {
       "closeButton": true,
@@ -602,4 +984,3 @@
 </body>
 
 </html>
-

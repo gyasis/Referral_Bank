@@ -7,10 +7,25 @@ import numpy as np
 import sqlite3
 from inspect import currentframe
 import sys
-
+import os
+import time
+import re
+import sqlite3
+from prettytable import PrettyTable
+from langchain.chains.question_answering import load_qa_chain
+from langchain.chat_models import ChatOpenAI
+from langchain.utilities import GoogleSerperAPIWrapper
+from langchain.llms.openai import OpenAI
+from langchain.agents import initialize_agent, Tool
+from langchain.agents import AgentType
+from langchain import OpenAI, LLMChain, PromptTemplate
+from langchain.memory import ConversationBufferWindowMemory
+from datetime import datetime
 # %%
 
 app = Flask(__name__)
+os.environ["SERPER_API_KEY"] = "f1d76cfda54d3b248d9bd7d931d794f4af123eb8"
+os.environ["OPENAI_API_KEY"] = "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"
 
 
 # Database setup
@@ -18,6 +33,11 @@ DB_PATH = "data/referrals.db"
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 # Assuming the table has already been created and structured correctly
+
+
+
+
+
 
 
 def mod_df(df): 
@@ -37,11 +57,42 @@ def load_data():
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("SELECT * FROM referrals", conn)
     conn.close()
-    print(df.head())
+  
     return df
 
+def create_comments_table():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+    # Check if the comments table exists
+    cur.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='comments' ''')
+    
+    if cur.fetchone()[0] == 0:
+        cur.execute('''
+            CREATE TABLE comments (
+                id INTEGER PRIMARY KEY,
+                referral_id INTEGER,
+                comment TEXT,
+                username TEXT,  
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(referral_id) REFERENCES referrals(id)
+            )
+        ''')
+        print("Comments table created successfully.")
+    else:
+        # If the table already exists, check if the username column exists
+        cur.execute("PRAGMA table_info(comments)")
+        columns = [column[1] for column in cur.fetchall()]
+        if "username" not in columns:
+            cur.execute("ALTER TABLE comments ADD COLUMN username TEXT")
+            print("Username column added to existing Comments table.")
+        else:
+            print("Comments table already has a username column.")
+    
+    conn.close()
 
 
+create_comments_table()
 
 
 @app.route('/')
@@ -104,6 +155,18 @@ def details():
             for key in result.keys():
                 if pd.isnull(result[key]):
                     result[key] = ''
+
+            # Fetch comments for the referral
+            conn = sqlite3.connect(DB_PATH)
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM comments WHERE referral_id=?", (row_id,))
+            comments = cur.fetchall()
+            print(f"Comments from Details: {comments}")
+            conn.close()
+
+            # Add comments to the result
+            result['comments'] = comments
+
         except Exception as e:
             print(f"Unexpected error occurred: {str(e)}")
             result = {}
@@ -111,7 +174,6 @@ def details():
         return jsonify({str(k): str(v) for k, v in result.items()})  # Converts all keys and values to string
     else:
         return jsonify({"error": "Invalid id provided."})
-
 
 @app.route('/update', methods=['POST'])
 def update():
@@ -188,11 +250,102 @@ def delete():
         conn.close()
         print(f"Unexpected error occurred at line {sys.exc_info()[-1].tb_lineno}: {str(e)}")
         return jsonify({"status": "error", "message": str(e)})
+     
+@app.route('/comments')
+def get_comments():
+    referral_id = request.args.get('recordId')  # Using 'recordId' from frontend to match with 'referral_id' in backend
+    
+    if not referral_id:
+        return jsonify({"error": "recordId parameter is required"}), 400
 
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM comments WHERE referral_id=?", (referral_id,))
+    comments = [dict(zip([column[0] for column in cur.description], row)) for row in cur.fetchall()]
+    print(f"Returned comments: {comments}")
+    conn.close()
+    return jsonify(comments)
+
+
+
+@app.route('/add_comment', methods=['POST'])
+def add_comment():
+    referral_id = request.form.get('recordId')
+    comment_text = request.form.get('text')
+    
+    print(f"Referral_id: {referral_id} \ncomment_text: {comment_text}")
+    
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    # Insert the comment into the database
+    # Insert the comment into the database
+    cur.execute("INSERT INTO comments (referral_id, comment, username) VALUES (?, ?, ?)", (referral_id, comment_text, "johndoe"))
+
+    
+    # Fetch the last inserted comment's details
+    comment_id = cur.lastrowid  # Get the ID of the last inserted row
+    cur.execute("SELECT * FROM comments WHERE id=?", (comment_id,))
+    comment = cur.fetchone()
+
+    # Populate the response data
+    response_data = {
+    "status": "success",
+    "message": "Comment added successfully!",
+    "commentId": comment[0],  # Assuming 'id' is the first column
+    "commentText": comment[2],  # Assuming 'comment' is the third column
+    "username": comment[4],    # Assuming 'username' is the fifth column after adding it
+    "timestamp": comment[3]    # Assuming 'timestamp' is the fourth column
+}
+
+    print(f"Response data: {response_data}")
+    conn.commit()
+    conn.close()
+    
+    return jsonify(response_data)
+
+    
+@app.route('/delete_comment', methods=['POST'])
+def delete_comment():
+    comment_id = request.form.get('comment_id')
+    
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+ 
+    comment = cur.fetchone()
+
+    if comment:
+        # Delete the comment
+        cur.execute("DELETE FROM comments WHERE id=?", (comment_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"status": "success", "message": "Comment deleted successfully!"})
+    else:
+        conn.close()
+        return jsonify({"status": "error", "message": "Comment not found!"})
+
+
+
+@app.route('/search_and_parse', methods=['POST'])
+def search_and_parse_route():
+    record_id = request.form.get('record_id')  # Assuming you're sending the record ID from the frontend
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM referrals WHERE id=?", (record_id,))
+    record = cur.fetchone()
+    conn.close()
+    if not record:
+        return jsonify({"status": "error", "message": "Record not found!"})
+    
+    parsed_details = search_and_parse(record)
+    accepted_details = user_choice(parsed_details, record["SPECIALTY"])
+    
+    return jsonify(accepted_details)
 
 
 
 if __name__ == '__main__':
     app.run(debug=True,port=5005)
 
-# %%
+
