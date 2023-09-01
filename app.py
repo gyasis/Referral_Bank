@@ -304,6 +304,24 @@ def add_comment():
     
     return jsonify(response_data)
 
+
+@app.route('/edit_comment', methods=['POST'])
+def edit_comment():
+    comment_id = request.form.get('comment_id')
+    updated_text = request.form.get('updated_text')
+    
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    try:
+        cur.execute("UPDATE comments SET comment = ? WHERE id = ?", (updated_text, comment_id))
+        conn.commit()
+        return jsonify({"status": "success", "message": "Comment updated successfully!"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+    finally:
+        conn.close()
+
     
 @app.route('/delete_comment', methods=['POST'])
 def delete_comment():
@@ -312,7 +330,8 @@ def delete_comment():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     
- 
+    # First, check if the comment exists
+    cur.execute("SELECT * FROM comments WHERE id=?", (comment_id,))
     comment = cur.fetchone()
 
     if comment:
@@ -324,6 +343,7 @@ def delete_comment():
     else:
         conn.close()
         return jsonify({"status": "error", "message": "Comment not found!"})
+
 
 
 

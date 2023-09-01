@@ -1,6 +1,7 @@
 # %%
 
 import pandas as pd
+# %%
 
 def extract_data_from_txt():
     # Load the text file

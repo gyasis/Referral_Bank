@@ -927,30 +927,60 @@
         }
       });
 
-      // Edit and delete comment functionality
-      $(".comments-list").on("click", ".comment-edit", function (e) {
-        e.preventDefault();
-        var commentId = $(this).data("id");
-        var commentText = $(this).closest(".comment").find(".comment-body").text();
-        // Here, you can show a modal or an input field to edit the comment.
-        // After editing, send the updated comment to the back-end.
+    // Edit and delete comment functionality
+    $(".comments-list").on("click", ".comment-edit", function (e) {
+      e.preventDefault();
+      var commentId = $(this).data("id");
+      var commentText = $(this).closest(".comment").find(".comment-body").text();
+
+      // Display the comment in a textarea for editing
+      var editTextarea = $('<textarea></textarea>').val(commentText);
+      var saveButton = $('<button>Save</button>');
+
+      saveButton.on('click', function() {
+          var updatedText = editTextarea.val();
+          
+          // Send the updated comment to the server
+          $.post("/edit_comment", {
+              comment_id: commentId,
+              updated_text: updatedText
+          }, function (response) {
+              if (response.status === "success") {
+                  // Update the comment display
+                  $(`[data-id="${commentId}"]`).closest(".comment").find(".comment-body").text(updatedText);
+                  toastr.success(response.message);
+              } else {
+                  toastr.error(response.message);
+              }
+          }).fail(function() {
+              toastr.error("Failed to update comment due to a server error.");
+          });
       });
 
+      // Replace the comment text with the textarea and save button
+      $(this).closest(".comment").find(".comment-body").empty().append(editTextarea).append(saveButton);
+      });
+
+// Add the Dmment functionality here
       $(".comments-list").on("click", ".comment-delete", function (e) {
         e.preventDefault();
         var commentId = $(this).data("id");
         $.post("/delete_comment", {
-          id: commentId
+          comment_id: commentId
         }, function (response) {
-          if (response.success) {
+          if (response.status === "success") {
             // Remove the comment from the list
             $(`[data-id="${commentId}"]`).closest(".comment").remove();
+toastr.success(response.message);
           } else {
-            alert("Failed to delete comment.");
+            toastr.error(response.message);
           }
-        });
+        }).fail(function() {
+            toastr.error("Failed to delete comment due to a server error.");
       });
     });
+
+  });
   </script>
 
 
