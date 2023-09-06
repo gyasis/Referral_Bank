@@ -1,10 +1,11 @@
 # %%
-from flask import Flask, jsonify, render_template, request, jsonify
+from flask import Flask, jsonify, render_template, request, redirect, url_for, session
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 from fuzzywuzzy import fuzz
 from filelock import FileLock
 import pandas as pd
 import numpy as np
-import sqlite3
 from inspect import currentframe
 import sys
 import os
@@ -21,23 +22,19 @@ from langchain.agents import AgentType
 from langchain import OpenAI, LLMChain, PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from datetime import datetime
-# %%
+import sqlite3
+import secrets
 
 app = Flask(__name__)
-os.environ["SERPER_API_KEY"] = "f1d76cfda54d3b248d9bd7d931d794f4af123eb8"
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["SERPER_API_KEY"] = "f1d76cfda54d3b248d9bd7d931d794f4af123e35756"
+os.environ["OPENAI_API_KEY"] = "sk-KcsvnmTqOD0LnJTovqUwT3BlbkFJeN7Ux0M22244"
 
-
+app.secret_key = secrets.token_hex(16)
 # Database setup
 DB_PATH = "data/referrals.db"
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 # Assuming the table has already been created and structured correctly
-
-
-
-
-
 
 
 def mod_df(df): 
@@ -84,16 +81,100 @@ def create_comments_table():
         cur.execute("PRAGMA table_info(comments)")
         columns = [column[1] for column in cur.fetchall()]
         if "username" not in columns:
-            cur.execute("ALTER TABLE comments ADD COLUMN username TEXT")
-            print("Username column added to existing Comments table.")
+            cur.execute("ALTER TABLE comments ADD COLUMN user_id integer")
+            print("user_id column added to existing Comments table.")
         else:
             print("Comments table already has a username column.")
     
     conn.close()
 
 
-create_comments_table()
+# Creating the users table
+def create_users_table():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    # Check if the users table exists
+    cur.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='users' ''')
+    
+    if cur.fetchone()[0] == 0:
+        cur.execute('''
+            CREATE TABLE users (
+                id INTEGER PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                username TEXT UNIQUE NOT NULL
+            )
+        ''')
+        print("Users table created successfully.")
+    else:
+        print("Users table already exists.")
+    
+    conn.commit()
+    conn.close()
 
+create_comments_table()
+create_users_table()
+
+def get_username(user_id):
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT username FROM users WHERE id=?", (user_id,))
+        user = cur.fetchone()
+        return user[0] if user else None
+
+#Login and Registration sections
+
+def register_user(email, password, username):
+    hashed_password = generate_password_hash(password, method='sha256')
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)", (email, hashed_password, username))
+        conn.commit()
+        conn.close()
+        return True
+    except:
+        return False
+    
+    
+def login_user(email, password):
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT id, username, password FROM users WHERE email=?", (email,))
+            user = cur.fetchone()
+            
+            if not user:
+                print("No user with email:", email)
+                return None
+            
+            user_id, username, hashed_password_from_db = user
+            
+            # Print result of password check
+            is_password_correct = check_password_hash(hashed_password_from_db, password)
+            print("Is password correct?", is_password_correct)
+            
+            if is_password_correct:
+                return user_id, username
+            else:
+                print("Debug: Failed password check!")
+                print(f"Debug: Hashed password from DB: {hashed_password_from_db}")
+                print(f"Debug: Password provided by user (hashed): {generate_password_hash(password, method='sha256')}")
+                
+    except Exception as e:
+        print("Error during login:", e)
+    return None
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
 
 @app.route('/')
 def home():
@@ -253,6 +334,10 @@ def delete():
      
 @app.route('/comments')
 def get_comments():
+    try:
+        current_user = session['user_id']
+    except KeyError:
+        current_user = None
     referral_id = request.args.get('recordId')  # Using 'recordId' from frontend to match with 'referral_id' in backend
     
     if not referral_id:
@@ -264,12 +349,19 @@ def get_comments():
     comments = [dict(zip([column[0] for column in cur.description], row)) for row in cur.fetchall()]
     print(f"Returned comments: {comments}")
     conn.close()
-    return jsonify(comments)
+    return jsonify(comments=comments, current_user=session.get('username'))
 
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
 
 
 @app.route('/add_comment', methods=['POST'])
 def add_comment():
+    if 'user_id' not in session:
+        return jsonify({"status": "error", "message": "Please login first!"})
+    username = session['username']
     referral_id = request.form.get('recordId')
     comment_text = request.form.get('text')
     
@@ -280,7 +372,7 @@ def add_comment():
 
     # Insert the comment into the database
     # Insert the comment into the database
-    cur.execute("INSERT INTO comments (referral_id, comment, username) VALUES (?, ?, ?)", (referral_id, comment_text, "johndoe"))
+    cur.execute("INSERT INTO comments (referral_id, comment, username) VALUES (?, ?, ?)", (referral_id, comment_text, username))
 
     
     # Fetch the last inserted comment's details
@@ -344,7 +436,28 @@ def delete_comment():
         conn.close()
         return jsonify({"status": "error", "message": "Comment not found!"})
 
+@app.route('/register', methods=['POST'])
+def register():
+    email = request.form['email']
+    password = request.form['password']
+    username = request.form['username']
+    if register_user(email, password, username):
+        return jsonify(status="success", message="Registration successful")
+    else:
+        return jsonify(status="error", message="Registration failed, email or username might be taken."), 400
 
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form['email']
+    password = request.form['password']
+    user = login_user(email, password)
+    if user:  # assuming login_user now returns a tuple (id, username)
+        user_id, username = user
+        session['user_id'] = user_id
+        session['username'] = username  # Store the username in session
+        return jsonify(status="success", message="Logged in successfully")
+    else:
+        return jsonify(status="error", message="Login failed, check your credentials."), 400
 
 
 @app.route('/search_and_parse', methods=['POST'])
@@ -363,9 +476,19 @@ def search_and_parse_route():
     
     return jsonify(accepted_details)
 
+@app.route('/is_logged_in', methods=['GET'])
+def check_login_status():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        username = get_username(user_id)
+        # Fetch the username using the user_id from your database
+        # Let's say you fetch it and the username is 'JohnDoe'
+        return jsonify(logged_in=True, username=username)
+    return jsonify(logged_in=False)
+
 
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5005)
+    app.run(host='0.0.0.0',debug=True,port=5005)
 
 
