@@ -6,13 +6,12 @@ gunicorn==20.1.0
 openpyxl==3.0.9
 filelock==3.3.2
 python-Levenshtein==0.12.2
-
+pyOpenSSL==20.0.1
 secrets
 sqlite3
 Werkzeug
 filelock
 prettytable
-
 datetime
 
 
