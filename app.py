@@ -13,16 +13,16 @@ import time
 import re
 import sqlite3
 from prettytable import PrettyTable
-from langchain.chains.question_answering import load_qa_chain
-from langchain.chat_models import ChatOpenAI
-from langchain.utilities import GoogleSerperAPIWrapper
-from langchain.llms.openai import OpenAI
-from langchain.agents import initialize_agent, Tool
-from langchain.agents import AgentType
-from langchain import OpenAI, LLMChain, PromptTemplate
-from langchain.memory import ConversationBufferWindowMemory
+# from langchain.chains.question_answering import load_qa_chain
+# from langchain.chat_models import ChatOpenAI
+# from langchain.utilities import GoogleSerperAPIWrapper
+# from langchain.llms.openai import OpenAI
+# from langchain.agents import initialize_agent, Tool
+# from langchain.agents import AgentType
+# from langchain import OpenAI, LLMChain, PromptTemplate
+# from langchain.memory import ConversationBufferWindowMemory
 from datetime import datetime
-import sqlite3
+
 import secrets
 
 app = Flask(__name__)
@@ -150,30 +150,20 @@ def login_user(email, password):
             
             user_id, username, hashed_password_from_db = user
             
-            # Print result of password check
             is_password_correct = check_password_hash(hashed_password_from_db, password)
             print("Is password correct?", is_password_correct)
             
             if is_password_correct:
-                return user_id, username
+                return user_id, username, hashed_password_from_db # include the hashed_password in return
             else:
                 print("Debug: Failed password check!")
                 print(f"Debug: Hashed password from DB: {hashed_password_from_db}")
-                print(f"Debug: Password provided by user (hashed): {generate_password_hash(password, method='sha256')}")
                 
     except Exception as e:
         print("Error during login:", e)
     return None
 
-            
-            
-            
-            
-            
-            
-            
-            
-            
+
             
 
 @app.route('/')
@@ -436,45 +426,93 @@ def delete_comment():
         conn.close()
         return jsonify({"status": "error", "message": "Comment not found!"})
 
+import sqlite3
 @app.route('/register', methods=['POST'])
 def register():
     email = request.form['email']
     password = request.form['password']
     username = request.form['username']
-    if register_user(email, password, username):
-        return jsonify(status="success", message="Registration successful")
-    else:
+    update_password_flag = request.form.get('updatePasswordFlag', 'false') == 'true'
+
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+
+            if update_password_flag:
+                # Update the password for the user with the given email
+                new_hashed_password = generate_password_hash(password)
+                cur.execute("UPDATE users SET password=? WHERE email=?", (new_hashed_password, email))
+                conn.commit()
+
+                if cur.rowcount == 0:  # No rows updated, possibly invalid email
+                    return jsonify(status="error", message="Failed to update password."), 400
+
+                # Optionally: Log the user in after updating the password
+                cur.execute("SELECT id FROM users WHERE email=?", (email,))
+                user_id = cur.fetchone()[0]
+                session['user_id'] = user_id
+                return jsonify(status="success", message="Password updated successfully")
+
+            else:
+                # Standard registration logic
+                hashed_password = generate_password_hash(password)
+                cur.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)", (email, hashed_password, username))
+                conn.commit()
+                return jsonify(status="success", message="Registration successful")
+
+    except sqlite3.IntegrityError:
+        # This error occurs if the email or username is not unique
         return jsonify(status="error", message="Registration failed, email or username might be taken."), 400
+
+    except Exception as e:
+        print(f"Error during registration/update: {e}")
+        return jsonify(status="error", message="An unexpected error occurred."), 500
+
 
 @app.route('/login', methods=['POST'])
 def login():
     email = request.form['email']
     password = request.form['password']
+    
     user = login_user(email, password)
-    if user:  # assuming login_user now returns a tuple (id, username)
-        user_id, username = user
+    if user:
+        user_id, username, stored_hashed_password = user  # Unpacking the three values
+
+        # Check if the user's hashed password matches the hash of the generic password
+        is_generic_password = check_password_hash(stored_hashed_password, 'h3r$3lf')
+        
         session['user_id'] = user_id
-        session['username'] = username  # Store the username in session
-        return jsonify(status="success", message="Logged in successfully")
+        session['username'] = username
+
+        response_data = {
+            "status": "success",
+            "message": "Logged in successfully",
+            "username": username,
+            "email": email,
+            "generic_password_used": is_generic_password
+        }
+        
+        return jsonify(response_data)
     else:
         return jsonify(status="error", message="Login failed, check your credentials."), 400
 
 
-@app.route('/search_and_parse', methods=['POST'])
-def search_and_parse_route():
-    record_id = request.form.get('record_id')  # Assuming you're sending the record ID from the frontend
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM referrals WHERE id=?", (record_id,))
-    record = cur.fetchone()
-    conn.close()
-    if not record:
-        return jsonify({"status": "error", "message": "Record not found!"})
+
+# @app.route('/search_and_parse', methods=['POST'])
+# def search_and_parse_route():
+#     record_id = request.form.get('record_id')  # Assuming you're sending the record ID from the frontend
+#     conn = sqlite3.connect(DB_PATH)
+#     cur = conn.cursor()
+#     cur.execute("SELECT * FROM referrals WHERE id=?", (record_id,))
+#     record = cur.fetchone()
+#     conn.close()
+#     if not record:
+#         return jsonify({"status": "error", "message": "Record not found!"})
     
-    parsed_details = search_and_parse(record)
-    accepted_details = user_choice(parsed_details, record["SPECIALTY"])
+#     parsed_details = search_and_parse(record)
+#     accepted_details = user_choice(parsed_details, record["SPECIALTY"])
     
-    return jsonify(accepted_details)
+#     return jsonify(accepted_details)
 
 @app.route('/is_logged_in', methods=['GET'])
 def check_login_status():
