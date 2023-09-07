@@ -11,7 +11,7 @@ services:
     ports:
       - "80:5005"
     volumes:
-      - data:/app/data
+      - ./data:/app/data
     environment:
       FLASK_APP: app.py
       FLASK_RUN_HOST: 0.0.0.0
