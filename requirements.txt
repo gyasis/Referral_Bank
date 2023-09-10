@@ -10,5 +10,5 @@ Werkzeug
 filelock
 prettytable
 datetime
-
+flask_socketio
 
