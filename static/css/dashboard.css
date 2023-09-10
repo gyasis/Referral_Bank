@@ -258,9 +258,9 @@
             /* Position it over the actual emoji */
             top: 0;
             left: 0;
-            color: red !important;
+            color: rgba(152, 117, 114, 0.831) !important;
             /* Red outline */
-            -webkit-text-stroke: 1px red !important;
+            -webkit-text-stroke: 1px black !important;
             /* Outline effect */
             z-index: 1;
             /* Ensure it's below the actual emoji */
