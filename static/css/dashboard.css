@@ -244,8 +244,7 @@
         /* The heart emoji itself */
         
         .Example-module--emoji-button---ihCG span {
-            /* Adjust the size as needed */
-            color: transparent;
+            color: transparent !important;
             /* Make the actual emoji transparent */
             z-index: 2;
             /* Ensure it's above the pseudo-element */
@@ -255,15 +254,13 @@
         .Example-module--emoji-button---ihCG::before {
             content: "❤️";
             /* The heart emoji */
-            f
-            /* Match the size of the actual emoji */
             position: absolute;
             /* Position it over the actual emoji */
             top: 0;
             left: 0;
-            color: red;
+            color: red !important;
             /* Red outline */
-            -webkit-text-stroke: 1px red;
+            -webkit-text-stroke: 1px red !important;
             /* Outline effect */
             z-index: 1;
             /* Ensure it's below the actual emoji */
@@ -271,8 +268,8 @@
         /* When the emoji is liked, change the appearance */
         
         .Example-module--emoji-button---ihCG.liked::before {
-            color: red;
+            color: red !important;
             /* Solid red heart */
-            -webkit-text-stroke: 0;
+            -webkit-text-stroke: 0 !important;
             /* Remove the outline effect */
         }

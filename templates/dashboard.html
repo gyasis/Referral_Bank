@@ -1097,62 +1097,78 @@
   document.addEventListener("DOMContentLoaded", function () {
     let activeCommentId; // to keep track of which comment the user is selecting an emoji for
 
+    function updateEmojiCount(commentId) {
+        // Fetch the updated emoji count for the given commentId
+        fetch(`/get_emoji_counts?comment_id=${commentId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update the display with the new count
+                const commentElement = document.querySelector(`.comment[data-id="${commentId}"]`);
+                const emojiCountElement = commentElement.querySelector('.emoji-count-heart');
+                emojiCountElement.textContent = data.emoji_count;
+            });
+    }
+
     // Event handler for when the emoji button is clicked
     document.querySelector(".comments-list").addEventListener("click", function (e) {
-      if (e.target.matches('.Example-module--emoji-button---ihCG')) {
-        e.preventDefault();
-        console.log("Emoji button clicked!");
-        activeCommentId = e.target.closest(".comment").getAttribute("data-id");
+        if (e.target.matches('.Example-module--emoji-button---ihCG')) {
+            e.preventDefault();
+            console.log("Emoji button clicked!");
+            activeCommentId = e.target.closest(".comment").getAttribute("data-id");
 
-        // Always use the heart emoji
-        const emoji = "❤️";
+            // Always use the heart emoji
+            const emoji = "❤️";
 
-        // Check if the button already has the 'liked' class
-        if (e.target.classList.contains('liked')) {
-          // If it does, remove the class and send a request to remove the like
-          e.target.classList.remove('liked');
-          fetch('/add_emoji', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                comment_id: activeCommentId,
-                emoji_type: "none"
-              })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.status !== "success") {
-                console.error("Failed to remove emoji. Response:", data);
-              }
-            });
-        } else {
-          // If it doesn't, add the class and send a request to add the like
-          e.target.classList.add('liked');
-          fetch('/add_emoji', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                comment_id: activeCommentId,
-                emoji_type: emoji
-              })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.status !== "success") {
-                console.error("Failed to add emoji. Response:", data);
-              }
-            });
+            // Check if the button already has the 'liked' class
+            if (e.target.classList.contains('liked')) {
+                // If it does, remove the class and send a request to remove the like
+                e.target.classList.remove('liked');
+                fetch('/add_emoji', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        comment_id: activeCommentId,
+                        emoji_type: "none"
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== "success") {
+                        console.error("Failed to remove emoji. Response:", data);
+                    } else {
+                        updateEmojiCount(activeCommentId);
+                    }
+                });
+            } else {
+                // If it doesn't, add the class and send a request to add the like
+                e.target.classList.add('liked');
+                fetch('/add_emoji', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        comment_id: activeCommentId,
+                        emoji_type: emoji
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== "success") {
+                        console.error("Failed to add emoji. Response:", data);
+                    } else {
+                        updateEmojiCount(activeCommentId);
+                    }
+                });
+            }
         }
-      }
     });
-  });
+});
+
+
 </script>
-
-
 
 
 

@@ -619,6 +619,24 @@ def add_emoji():
 
     return jsonify(status="success")
 
+@app.route('/get_emoji_counts')
+def get_emoji_counts():
+    comment_id = request.args.get('comment_id')
+    
+    if not comment_id:
+        return jsonify({"error": "comment_id parameter is required"}), 400
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT comment_id, COUNT(emoji_type) as emoji_count FROM comment_emojis WHERE comment_id=? GROUP BY comment_id", (comment_id,))
+    counts = cur.fetchone()
+    conn.close()
+
+    if counts:
+        return jsonify(comment_id=counts[0], emoji_count=counts[1])
+    else:
+        return jsonify(comment_id=comment_id, emoji_count=0)
+
 
 
 if __name__ == '__main__':
