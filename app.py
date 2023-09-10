@@ -1,5 +1,6 @@
 # %%
 from flask import Flask, jsonify, render_template, request, redirect, url_for, session
+from flask_socketio import SocketIO, emit
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from fuzzywuzzy import fuzz
