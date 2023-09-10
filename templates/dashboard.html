@@ -30,7 +30,9 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
   <!-- Include DataTables Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 
 
   <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
@@ -305,7 +307,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="loginRegisterModalLabel">Login / Register</h5>
+          <h5 class="modal-title" id="loginRegisterModalLabel">Login</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -825,6 +827,8 @@
                           </span>
                       </div>
                   `;
+
+                  
                   var emojiPicker = `<button class="Example-module--emoji-button---ihCG"><span>♡</span></button>`;  
                   
                   var commentHTML = `
@@ -833,10 +837,10 @@
                               <span class="comment-user">${comment.username}</span>
                               <span class="comment-timestamp">${comment.timestamp}</span>
                               <span class="comment-actions">${commentActions}</span>
-                            ${emojiPicker}
+                         <!--  ${emojiPicker}  -->
                           </div>
                           <div class="comment-body">${comment.comment}</div>
-                          ${emojiFooter}
+                         <!-- ${emojiFooter} -->
                       </div>
                   `;
   
@@ -886,7 +890,7 @@
                                   </span>
                               </div>
                               <div class="comment-body">${response.commentText}</div>
-                              ${emojiFooter}
+                            <!--  ${emojiFooter} -->
                           </div>
                       `;
   
@@ -1172,6 +1176,29 @@
 
 
 
+
+
+<!--
+  
+  <script>
+    $(document).ready(function () {
+        // Socket.io setup
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('update_emoji_count', function(data) {
+            // Update the UI with the new emoji count
+            // For example, if you want to update the emoji count for a specific comment:
+            const commentElement = document.querySelector(`.comment[data-id="${data.commentId}"]`);
+            if (commentElement) {
+                const emojiCountElement = commentElement.querySelector('.emoji-count-heart');
+                emojiCountElement.textContent = data.emoji_count;
+            }
+        });
+    });
+</script>
+
+
+-->
 
 
 

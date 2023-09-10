@@ -24,18 +24,27 @@ from prettytable import PrettyTable
 # from langchain.memory import ConversationBufferWindowMemory
 from datetime import datetime
 
+
+
+
 import secrets
 
+
 app = Flask(__name__)
+
 os.environ["SERPER_API_KEY"] = "f1d76cfda54d3b248d9bd7d931d794f4af123e35756"
 os.environ["OPENAI_API_KEY"] = "sk-KcsvnmTqOD0LnJTovqUwT3BlbkFJeN7Ux0M22244"
 
 app.secret_key = secrets.token_hex(16)
+
+
 # Database setup
 DB_PATH = "data/referrals.db"
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 # Assuming the table has already been created and structured correctly
+
+
 
 
 def mod_df(df): 
