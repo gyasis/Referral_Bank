@@ -111,9 +111,36 @@ def create_users_table():
     
     conn.commit()
     conn.close()
+    
+def create_comment_emojis_table():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+    # Check if the comment_emojis table exists
+    cur.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='comment_emojis' ''')
+    
+    if cur.fetchone()[0] == 0:
+        cur.execute('''
+            CREATE TABLE comment_emojis (
+                id INTEGER PRIMARY KEY,
+                username TEXT,
+                comment_id INTEGER,
+                emoji_type TEXT,
+                FOREIGN KEY(comment_id) REFERENCES comments(id)
+            )
+        ''')
+        print("Comment Emojis table created successfully.")
+    else:
+        print("Comment Emojis table already exists.")
+    
+    conn.commit()
+    conn.close()
+    
 
 create_comments_table()
 create_users_table()
+create_comment_emojis_table()
+
 
 def get_username(user_id):
     with sqlite3.connect(DB_PATH) as conn:
@@ -162,6 +189,20 @@ def login_user(email, password):
     except Exception as e:
         print("Error during login:", e)
     return None
+
+#emoji code
+def user_has_emoji(username, comment_id):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+    cur.execute('''
+        SELECT emoji_type FROM comment_emojis WHERE username=? AND comment_id=?
+    ''', (username, comment_id))
+    
+    result = cur.fetchone()
+    conn.close()
+    
+    return result[0] if result else None
 
 
             
@@ -328,18 +369,33 @@ def get_comments():
         current_user = session['user_id']
     except KeyError:
         current_user = None
-    referral_id = request.args.get('recordId')  # Using 'recordId' from frontend to match with 'referral_id' in backend
+    referral_id = request.args.get('recordId')
     
     if not referral_id:
         return jsonify({"error": "recordId parameter is required"}), 400
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute("SELECT * FROM comments WHERE referral_id=?", (referral_id,))
+    
+    # Fetch comments and their respective emoji counts
+    cur.execute("""
+        SELECT c.*, 
+               COALESCE(ce.emoji_count, 0) as emoji_count
+        FROM comments c
+        LEFT JOIN (
+            SELECT comment_id, COUNT(emoji_type) as emoji_count
+            FROM comment_emojis
+            WHERE emoji_type = '❤️'
+            GROUP BY comment_id
+        ) ce ON c.id = ce.comment_id
+        WHERE c.referral_id = ?
+    """, (referral_id,))
+    
     comments = [dict(zip([column[0] for column in cur.description], row)) for row in cur.fetchall()]
     print(f"Returned comments: {comments}")
     conn.close()
     return jsonify(comments=comments, current_user=session.get('username'))
+
 
 @app.route('/logout')
 def logout():
@@ -514,6 +570,8 @@ def login():
     
 #     return jsonify(accepted_details)
 
+
+
 @app.route('/is_logged_in', methods=['GET'])
 def check_login_status():
     if 'user_id' in session:
@@ -523,6 +581,43 @@ def check_login_status():
         # Let's say you fetch it and the username is 'JohnDoe'
         return jsonify(logged_in=True, username=username)
     return jsonify(logged_in=False)
+
+
+
+    
+@app.route('/add_emoji', methods=['POST'])
+def add_emoji():
+    # Get data from request
+    username = session["username"]
+    data = request.get_json()
+    comment_id = data['comment_id']
+    emoji_type = data['emoji_type']
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+    existing_emoji = user_has_emoji(username, comment_id)
+    
+    if existing_emoji:
+        if emoji_type == "none":  # Handle the removal of a like
+            # Delete the entry
+            cur.execute('''
+                DELETE FROM comment_emojis WHERE username=? AND comment_id=?
+            ''', (username, comment_id))
+        else:
+            # Update the entry
+            cur.execute('''
+                UPDATE comment_emojis SET emoji_type=? WHERE username=? AND comment_id=?
+            ''', (emoji_type, username, comment_id))
+    else:
+        # Insert the new emoji
+        cur.execute('''
+            INSERT INTO comment_emojis (username, comment_id, emoji_type) VALUES (?, ?, ?)
+        ''', (username, comment_id, emoji_type))
+    
+    conn.commit()
+    conn.close()
+
+    return jsonify(status="success")
 
 
 
