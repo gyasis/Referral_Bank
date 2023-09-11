@@ -996,7 +996,7 @@
       '</ul>' +
       '<li>Login functionality introduced.</li>' +
       '<li>Commenting feature added.</li>' +
-      '<li>Temporary address change to <a href="http://www.her-referrals.com">www.her-referrals.com</a>.</li>' +
+      '<li>Upcoming address change in the next 48 hours to <a href="http://www.her-referrals.com">www.her-referrals.com</a>.</li>' +
       '</ul><br><strong>Coming Soon:</strong> AI chat agent and multiple location entry.',
       'Version 0.22 Released - New Features & Address Update'
     );
@@ -1185,7 +1185,43 @@
 </script>
 
 
+<script>
 
+  document.addEventListener('DOMContentLoaded', function() {
+    var specialtiesList = document.getElementById("specialties");
+    var items = specialtiesList.getElementsByTagName("li");
+
+    // Convert NodeList to Array
+    var itemsArr = Array.prototype.slice.call(items);
+
+    itemsArr.sort(function(a, b) {
+        var textA = a.textContent || a.innerText;
+        var textB = b.textContent || b.innerText;
+
+        // Check if both are uppercase or neither is
+        if ((textA === textA.toUpperCase() && textB === textB.toUpperCase()) || (textA !== textA.toUpperCase() && textB !== textB.toUpperCase())) {
+            return textA.localeCompare(textB);
+        }
+        
+        if (textA === textA.toUpperCase()) {
+            return -1;
+        }
+
+        return 1;
+    });
+
+    // Re-append sorted items to list
+    for (var i = 0; i < itemsArr.length; i++) {
+        var text = itemsArr[i].textContent || itemsArr[i].innerText;
+        if (text === text.toUpperCase()) {
+            itemsArr[i].classList.add('uppercase-specialty');
+        }
+        specialtiesList.appendChild(itemsArr[i]);
+    }
+});
+
+
+</script>
 
 
 <!--
