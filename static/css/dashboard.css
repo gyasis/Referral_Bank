@@ -273,3 +273,7 @@
             -webkit-text-stroke: 0 !important;
             /* Remove the outline effect */
         }
+        
+        textarea {
+            width: 100% !important;
+        }
